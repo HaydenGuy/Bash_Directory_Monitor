@@ -6,19 +6,25 @@
 # dirname extracts the directory part from this absolute path
 script_dir="$(dirname "$(realpath "$0")")"
 
+# Find the config file in the script directory
 config_file="$script_dir/config.conf"
+
+# Search for line starting with '{dir_name}' in the config 
+# 'cut' to split the line at '=' and extract the second value (f2)
+input_dir=$(grep '^input_dir' "$config_file" | cut -d '=' -f2)
+output_dir=$(grep '^output_dir' "$config_file" | cut -d '=' -f2)
 
 # Monitor the input directory for new file creation events
 # -m: Monitor mode, keeps inotifywait running continuously
 # -e create: Only triggers on file creation events in the monitored directory
-# inotifywait -m "$input_dir" -e create |
-# while read path action file; do
+inotifywait -m "$input_dir" -e create |
+while read path action file; do
 #     # 'read' command processes output from inotifywait
 #     #   - 'path': the directory where the event occurred
 #     #   - 'action': the type of event (in this case, "CREATE")
 #     #   - 'file': the name of the newly created file
-#     echo "New file detected: $file in directory $path"
+    echo "New file detected: $file in directory $path"
     
-#     mv "$path/$file" "$output_dir/"
-#     echo "Moved $file to $output_dir/"
-# done
+    mv "$path/$file" "$output_dir/"
+    echo "Moved $file to $output_dir/"
+done
