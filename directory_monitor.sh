@@ -18,6 +18,10 @@ output_video_dir="${output_root_dir}/video"
 output_image_dir="${output_root_dir}/image"
 output_audio_dir="${output_root_dir}/audio"
 
+mkdir -p "$output_video_dir"
+mkdir -p "$output_image_dir"
+mkdir -p "$output_audio_dir"
+
 # Monitor the input directory for new file creation events
 # -m: Monitor mode, keeps inotifywait running continuously
 # -e create: Only triggers on file creation events in the monitored directory
