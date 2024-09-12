@@ -35,7 +35,7 @@ mkdir -p "$output_audio_dir"
     #   - 'file': the name of the file
 inotifywait -m "$input_dir" -e create -e moved_to -e close_write |
 while read path action file; do
-    file_type=$(file --mime-type -b $file)
+    file_type=$(file --mime-type -b "$path$file")
 
     case $file_type in
         video/*)
