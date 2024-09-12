@@ -22,17 +22,36 @@ mkdir -p "$output_video_dir"
 mkdir -p "$output_image_dir"
 mkdir -p "$output_audio_dir"
 
-# Monitor the input directory for new file creation events
+# MIMETYPE
+
+# Monitor the input directory for new files
 # -m: Monitor mode, keeps inotifywait running continuously
-# -e create: Only triggers on file creation events in the monitored directory
-inotifywait -m "$input_dir" -e create |
+# -e create: triggers on file creation events 
+# -e moved_to: triggers on file moved into folder events
+# -e close_write: triggers on file copied to the folder
+ # 'read' processes output from inotifywait
+    #   - 'path': the directory 
+    #   - 'action': the type of event
+    #   - 'file': the name of the file
+inotifywait -m "$input_dir" -e create -e moved_to -e close_write |
 while read path action file; do
-    # 'read' command processes output from inotifywait
-    #   - 'path': the directory where the event occurred
-    #   - 'action': the type of event (in this case, "CREATE")
-    #   - 'file': the name of the newly created file
-    echo "New file detected: $file in directory $path"
-    
-    mv "$path/$file" "$output_dir/"
-    echo "Moved $file to $output_dir/"
+    file_type=$(file --mime-type -b $file)
+
+    case $file_type in
+        video/*)
+            mv "$path/$file" "$output_video_dir"
+            echo "Moved $file to $output_video_dir"
+            ;;
+        image/*)
+            mv "$path/$file" "$output_image_dir"
+            echo "Moved $file to $output_image_dir"
+            ;;
+        audio/*)
+            mv "$path/$file" "$output_audio_dir"
+            echo "Moved $file to $output_audio_dir"
+            ;;
+        *)
+            echo "Unknown file type"
+            ;;
+    esac
 done
