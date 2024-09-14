@@ -29,30 +29,33 @@ mkdir -p "$output_unknown_dir"
 # -e create: triggers on file creation events 
 # -e moved_to: triggers on file moved into folder events
 # -e close_write: triggers on file copied to the folder
- # 'read' processes output from inotifywait
+ # 'read -r' processes output from inotifywait without / as escape characters
     #   - 'path': the directory 
     #   - 'action': the type of event
     #   - 'file': the name of the file
 inotifywait -m "$input_dir" -e create -e moved_to -e close_write |
-while read path action file; do
-    file_type=$(file --mime-type -b "$path$file")
+while read -r path action file; do
+    # Get the mime type of the file
+    file_type=$(file --mime-type -b "${path}${file}" | grep -oE '^(video|image|audio)')
 
     case $file_type in
-        video/*)
-            mv "$path$file" "$output_video_dir"
+        "video")
+            mv "${path}${file}" "$output_video_dir"
             echo "Moved $file to $output_video_dir"
             ;;
-        image/*)
-            mv "$path$file" "$output_image_dir"
+        "image")
+            mv "${path}${file}" "$output_image_dir"
             echo "Moved $file to $output_image_dir"
             ;;
-        audio/*)
-            mv "$path$file" "$output_audio_dir"
+        "audio")
+            mv "${path}${file}" "$output_audio_dir"
             echo "Moved $file to $output_audio_dir"
             ;;
         *)
-            mv "$path$file" "$output_unknown_dir"
-            echo "Unknown file type: moved $file to $output_unknown_dir"
+            if [[ -f "${path}${file}" ]]; then # Check if the file is a file then move to avoid mv errors
+                mv "${path}${file}" "$output_unknown_dir"
+                echo "Unknown file type: moved $file to $output_unknown_dir"
+            fi
             ;;
     esac
 done
