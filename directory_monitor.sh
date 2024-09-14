@@ -17,12 +17,12 @@ input_dir="$input_dir"
 output_video_dir="${output_root_dir}/video"
 output_image_dir="${output_root_dir}/image"
 output_audio_dir="${output_root_dir}/audio"
+output_unknown_dir="${output_root_dir}/unknown"
 
 mkdir -p "$output_video_dir"
 mkdir -p "$output_image_dir"
 mkdir -p "$output_audio_dir"
-
-# MIMETYPE
+mkdir -p "$output_unknown_dir"
 
 # Monitor the input directory for new files
 # -m: Monitor mode, keeps inotifywait running continuously
@@ -39,19 +39,23 @@ while read path action file; do
 
     case $file_type in
         video/*)
-            mv "$path/$file" "$output_video_dir"
+            mv "$path$file" "$output_video_dir"
             echo "Moved $file to $output_video_dir"
             ;;
         image/*)
-            mv "$path/$file" "$output_image_dir"
+            mv "$path$file" "$output_image_dir"
             echo "Moved $file to $output_image_dir"
             ;;
         audio/*)
-            mv "$path/$file" "$output_audio_dir"
+            mv "$path$file" "$output_audio_dir"
             echo "Moved $file to $output_audio_dir"
             ;;
         *)
-            echo "Unknown file type"
+            mv "$path$file" "$output_unknown_dir"
+            echo "Unknown file type: moved $file to $output_unknown_dir"
             ;;
     esac
 done
+
+# Renaming or overwrite if same file name
+# Always on/run in background
