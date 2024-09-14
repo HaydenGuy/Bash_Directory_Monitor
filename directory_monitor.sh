@@ -59,6 +59,3 @@ while read -r path action file; do
             ;;
     esac
 done
-
-# Renaming or overwrite if same file name
-# Always on/run in background
